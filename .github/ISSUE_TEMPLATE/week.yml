@@ -1,0 +1,34 @@
+name: Weekly Planner Issue
+description: Template for weekly planning.
+title: "Week [WeekNumber] of [Year] - Weekly Plan"
+labels: ["weekly-planner"]
+body:
+  - type: markdown
+    attributes:
+      value: "## Weekly Planner"
+  - type: textarea
+    attributes:
+      label: "Review of Last Week"
+      description: "Reflect on the past week. What went well? What could be improved?"
+      placeholder: "- Wins:
+- Challenges:
+- Lessons Learned:"
+  - type: textarea
+    attributes:
+      label: "Top Priorities for This Week"
+      description: "List your main goals for the upcoming week."
+      placeholder: "1. Goal One
+2. Goal Two
+3. Goal Three"
+  - type: textarea
+    attributes:
+      label: "Tasks for This Week"
+      description: "List all tasks that you need to complete this week."
+      placeholder: "- [ ] Task 1
+- [ ] Task 2
+- [ ] Task 3"
+  - type: textarea
+    attributes:
+      label: "Notes"
+      description: "Space for any additional notes, thoughts, or progress updates throughout the week."
+      placeholder: "Add your notes and progress updates here..."

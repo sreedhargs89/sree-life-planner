@@ -1,0 +1,33 @@
+name: Monthly Planner Issue
+description: Template for monthly planning.
+title: "[Month] [Year] - Monthly Plan"
+labels: ["monthly-planner"]
+body:
+  - type: markdown
+    attributes:
+      value: "## Monthly Planner"
+  - type: textarea
+    attributes:
+      label: "Review of Last Month"
+      description: "Reflect on the past month. What were your biggest accomplishments? What challenges did you face?"
+      placeholder: "- Key Achievements:
+- Areas for Improvement:
+- Insights Gained:"
+  - type: textarea
+    attributes:
+      label: "Top Goals for This Month"
+      description: "List your main goals for the upcoming month."
+      placeholder: "1. Goal One
+2. Goal Two
+3. Goal Three"
+  - type: textarea
+    attributes:
+      label: "Key Dates and Deadlines"
+      description: "List any important dates, appointments, or deadlines for this month."
+      placeholder: "- [Date]: Event/Deadline
+- [Date]: Event/Deadline"
+  - type: textarea
+    attributes:
+      label: "Notes"
+      description: "Space for any additional notes, thoughts, or progress updates throughout the month."
+      placeholder: "Add your notes and progress updates here..."

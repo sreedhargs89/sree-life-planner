@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Planner Issue Redirector</title>
+    <title>Planner Issue Redirector</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -12,7 +12,7 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #667eeaa 0%, #764ba2 100%);
             color: white;
         }
         .container {
@@ -49,21 +49,32 @@
             border-radius: 5px;
             font-family: 'Courier New', monospace;
         }
-        .manual-link {
+        .action-link {
             display: inline-block;
             margin-top: 1rem;
             padding: 0.5rem 1rem;
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
             color: white;
             text-decoration: none;
             border-radius: 5px;
-            border: 1px solid rgba(255,255,255,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin-left: 0.5rem;
+            margin-right: 0.5rem;
         }
-        .manual-link:hover {
-            background: rgba(255,255,255,0.3);
+        .action-link:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
     </style>
     <script>
+        // Function to get the week number
+        function getWeekNumber(d) {
+            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+            var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+            var weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
+            return weekNo;
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const today = new Date();
             const formattedToday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -82,8 +93,6 @@
             
             fetch(jsonUrl)
                 .then(response => {
-                    console.log('Response status:', response.status);
-                    console.log('Response headers:', response.headers);
                     if (!response.ok) {
                         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                     }
@@ -93,34 +102,54 @@
                     console.log('Issues loaded:', issues.length);
                     debugElement.innerHTML += `\n• Found ${issues.length} issues in JSON`;
                     
-                    const matchingIssue = issues.find(issue => issue.title.startsWith(formattedToday));
-                    if (matchingIssue) {
-                        console.log('Found matching issue:', matchingIssue);
-                        document.getElementById('status').textContent = 'Found existing issue! Redirecting...';
-                        debugElement.innerHTML += `\n• Found: ${matchingIssue.title}`;
+                    // Daily Planner
+                    const dailyMatchingIssue = issues.find(issue => issue.title.startsWith(formattedToday));
+                    if (dailyMatchingIssue) {
+                        console.log('Found matching daily issue:', dailyMatchingIssue);
+                        document.getElementById('status').textContent = 'Found existing daily issue! Redirecting...';
+                        debugElement.innerHTML += `\n• Found Daily: ${dailyMatchingIssue.title}`;
                         setTimeout(() => {
-                            window.location.href = matchingIssue.url;
+                            window.location.href = dailyMatchingIssue.url;
                         }, 1500);
                     } else {
-                        console.log('No matching issue found, creating new one');
-                        document.getElementById('status').textContent = 'Creating new issue...';
+                        console.log('No matching daily issue found, creating new one');
+                        document.getElementById('status').textContent = 'No daily issue found. You can create one, or view weekly/monthly planners.';
                         const fullDateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
                         const fullDateString = today.toLocaleDateString('en-US', fullDateOptions).replace(/,/g, '');
                         const title = `${formattedToday}: ${fullDateString}`;
-                        const encodedTitle = encodeURIComponent(title);
-                        const newIssueUrl = `https://github.com/${repoUrl}/issues/new?template=day.yml&title=${encodedTitle}`;
+                        const newIssueUrl = `https://github.com/${repoUrl}/issues/new?template=day.yml&title=${encodeURIComponent(title)}`;
                         
-                        debugElement.innerHTML += `\n• No matching issue found\n• Creating: ${title}`;
-                        
-                        // Show manual link as fallback
-                        const manualLink = document.getElementById('manual-link');
-                        manualLink.href = newIssueUrl;
-                        manualLink.style.display = 'inline-block';
-                        
-                        setTimeout(() => {
-                            window.location.href = newIssueUrl;
-                        }, 2000);
+                        const dailyLink = document.getElementById('daily-link');
+                        dailyLink.href = newIssueUrl;
+                        dailyLink.style.display = 'inline-block';
+                        document.querySelector('.spinner').style.display = 'none';
                     }
+
+                    // Weekly Planner
+                    const weekNumber = getWeekNumber(today);
+                    const year = today.getFullYear();
+                    const weeklyTitle = `Week ${weekNumber} of ${year} - Weekly Plan`;
+                    const weeklyMatchingIssue = issues.find(issue => issue.title === weeklyTitle);
+                    const weeklyLink = document.getElementById('weekly-link');
+                    if (weeklyMatchingIssue) {
+                        weeklyLink.href = weeklyMatchingIssue.url;
+                    } else {
+                        weeklyLink.href = `https://github.com/${repoUrl}/issues/new?template=week.yml&title=${encodeURIComponent(weeklyTitle)}`;
+                    }
+                    weeklyLink.style.display = 'inline-block';
+
+                    // Monthly Planner
+                    const month = today.toLocaleString('default', { month: 'long' });
+                    const monthlyTitle = `${month} ${year} - Monthly Plan`;
+                    const monthlyMatchingIssue = issues.find(issue => issue.title === monthlyTitle);
+                    const monthlyLink = document.getElementById('monthly-link');
+                    if (monthlyMatchingIssue) {
+                        monthlyLink.href = monthlyMatchingIssue.url;
+                    } else {
+                        monthlyLink.href = `https://github.com/${repoUrl}/issues/new?template=month.yml&title=${encodeURIComponent(monthlyTitle)}`;
+                    }
+                    monthlyLink.style.display = 'inline-block';
+
                 })
                 .catch(error => {
                     console.error('Error fetching issue titles:', error);
@@ -130,28 +159,45 @@
                     
                     debugElement.innerHTML += `\n• ERROR: ${error.message}`;
                     
-                    // Show manual fallback
+                    // Show manual fallback for daily
                     const fullDateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
                     const fullDateString = today.toLocaleDateString('en-US', fullDateOptions).replace(/,/g, '');
                     const title = `${formattedToday}: ${fullDateString}`;
-                    const encodedTitle = encodeURIComponent(title);
-                    const newIssueUrl = `https://github.com/${repoUrl}/issues/new?template=day.yml&title=${encodedTitle}`;
-                    
-                    const manualLink = document.getElementById('manual-link');
-                    manualLink.href = newIssueUrl;
-                    manualLink.style.display = 'inline-block';
+                    const newIssueUrl = `https://github.com/${repoUrl}/issues/new?template=day.yml&title=${encodeURIComponent(title)}`;
+                    const dailyLink = document.getElementById('daily-link');
+                    dailyLink.href = newIssueUrl;
+                    dailyLink.style.display = 'inline-block';
+
+                    // Show manual fallback for weekly
+                    const weekNumber = getWeekNumber(today);
+                    const year = today.getFullYear();
+                    const weeklyTitle = `Week ${weekNumber} of ${year} - Weekly Plan`;
+                    const weeklyLink = document.getElementById('weekly-link');
+                    weeklyLink.href = `https://github.com/${repoUrl}/issues/new?template=week.yml&title=${encodeURIComponent(weeklyTitle)}`;
+                    weeklyLink.style.display = 'inline-block';
+
+                    // Show manual fallback for monthly
+                    const month = today.toLocaleString('default', { month: 'long' });
+                    const monthlyTitle = `${month} ${year} - Monthly Plan`;
+                    const monthlyLink = document.getElementById('monthly-link');
+                    monthlyLink.href = `https://github.com/${repoUrl}/issues/new?template=month.yml&title=${encodeURIComponent(monthlyTitle)}`;
+                    monthlyLink.style.display = 'inline-block';
                 });
         });
     </script>
 </head>
 <body>
     <div class="container">
-        <h1>Daily Planner</h1>
+        <h1>Planner</h1>
         <p>Checking for today's issue: <strong id="date"></strong></p>
         <div class="spinner"></div>
         <p id="status">Loading...</p>
         <p id="error" class="error"></p>
-        <a id="manual-link" class="manual-link" style="display: none;" target="_blank">Create Issue Manually</a>
+        <div>
+            <a id="daily-link" class="action-link" style="display: none;" target="_blank">Create Daily Issue</a>
+            <a id="weekly-link" class="action-link" style="display: none;" target="_blank">This Week's Planner</a>
+            <a id="monthly-link" class="action-link" style="display: none;" target="_blank">This Month's Planner</a>
+        </div>
         <div id="debug" class="debug"></div>
     </div>
 </body>
