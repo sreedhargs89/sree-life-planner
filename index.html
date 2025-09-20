@@ -61,8 +61,8 @@
                         const fullDateString = today.toLocaleDateString('en-US', fullDateOptions).replace(/,/g, '');
                         const title = `${formattedToday}: ${fullDateString}`;
                         const encodedTitle = encodeURIComponent(title);
-                        // Replace 'YOUR_USERNAME/YOUR_REPO' with your actual GitHub username and repository name
-                        const repoUrl = 'YOUR_USERNAME/YOUR_REPO';
+                        // Replace 'YOUR_USERNAME/sreedhargs89' with your actual GitHub username and repository name
+                        const repoUrl = 'sreedhargs89/sree-life-planner';
                         window.location.href = `https://github.com/${repoUrl}/issues/new?template=day.yml&title=${encodedTitle}`;
                     }
                 })
