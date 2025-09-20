@@ -39,38 +39,107 @@
             color: #ffeb3b;
             margin-top: 1rem;
         }
+        .debug {
+            color: #e0e0e0;
+            font-size: 0.8em;
+            margin-top: 1rem;
+            text-align: left;
+            background: rgba(0,0,0,0.2);
+            padding: 1rem;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+        }
+        .manual-link {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .manual-link:hover {
+            background: rgba(255,255,255,0.3);
+        }
     </style>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const today = new Date();
             const formattedToday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            const repoUrl = 'sreedhargs89/sree-life-planner';
             
             // Update the UI
             document.getElementById('date').textContent = formattedToday;
             
-            fetch(`issue-titles.json?${Math.random()}`)
-                .then(response => response.json())
+            // Add debug information
+            const debugElement = document.getElementById('debug');
+            debugElement.innerHTML = `Debug Info:\n• Date: ${formattedToday}\n• Repository: ${repoUrl}\n• Fetching: issue-titles.json`;
+            
+            // Try to fetch the issue-titles.json
+            const jsonUrl = `issue-titles.json?${Math.random()}`;
+            console.log('Fetching:', jsonUrl);
+            
+            fetch(jsonUrl)
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    console.log('Response headers:', response.headers);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
                 .then(issues => {
+                    console.log('Issues loaded:', issues.length);
+                    debugElement.innerHTML += `\n• Found ${issues.length} issues in JSON`;
+                    
                     const matchingIssue = issues.find(issue => issue.title.startsWith(formattedToday));
                     if (matchingIssue) {
+                        console.log('Found matching issue:', matchingIssue);
                         document.getElementById('status').textContent = 'Found existing issue! Redirecting...';
-                        window.location.href = matchingIssue.url;
+                        debugElement.innerHTML += `\n• Found: ${matchingIssue.title}`;
+                        setTimeout(() => {
+                            window.location.href = matchingIssue.url;
+                        }, 1500);
                     } else {
+                        console.log('No matching issue found, creating new one');
                         document.getElementById('status').textContent = 'Creating new issue...';
                         const fullDateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
                         const fullDateString = today.toLocaleDateString('en-US', fullDateOptions).replace(/,/g, '');
                         const title = `${formattedToday}: ${fullDateString}`;
                         const encodedTitle = encodeURIComponent(title);
-                        // Replace 'YOUR_USERNAME/sreedhargs89' with your actual GitHub username and repository name
-                        const repoUrl = 'sreedhargs89/sree-life-planner';
-                        window.location.href = `https://github.com/${repoUrl}/issues/new?template=day.yml&title=${encodedTitle}`;
+                        const newIssueUrl = `https://github.com/${repoUrl}/issues/new?template=day.yml&title=${encodedTitle}`;
+                        
+                        debugElement.innerHTML += `\n• No matching issue found\n• Creating: ${title}`;
+                        
+                        // Show manual link as fallback
+                        const manualLink = document.getElementById('manual-link');
+                        manualLink.href = newIssueUrl;
+                        manualLink.style.display = 'inline-block';
+                        
+                        setTimeout(() => {
+                            window.location.href = newIssueUrl;
+                        }, 2000);
                     }
                 })
                 .catch(error => {
                     console.error('Error fetching issue titles:', error);
                     document.getElementById('status').textContent = 'Error loading issues';
-                    document.getElementById('error').textContent = 'Please check that issue-titles.json exists and is accessible.';
+                    document.getElementById('error').innerHTML = `Error: ${error.message}<br>This might happen if:<br>• GitHub Pages is not yet enabled<br>• The GitHub Actions workflow hasn't run yet<br>• issue-titles.json doesn't exist`;
                     document.querySelector('.spinner').style.display = 'none';
+                    
+                    debugElement.innerHTML += `\n• ERROR: ${error.message}`;
+                    
+                    // Show manual fallback
+                    const fullDateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                    const fullDateString = today.toLocaleDateString('en-US', fullDateOptions).replace(/,/g, '');
+                    const title = `${formattedToday}: ${fullDateString}`;
+                    const encodedTitle = encodeURIComponent(title);
+                    const newIssueUrl = `https://github.com/${repoUrl}/issues/new?template=day.yml&title=${encodedTitle}`;
+                    
+                    const manualLink = document.getElementById('manual-link');
+                    manualLink.href = newIssueUrl;
+                    manualLink.style.display = 'inline-block';
                 });
         });
     </script>
@@ -82,6 +151,8 @@
         <div class="spinner"></div>
         <p id="status">Loading...</p>
         <p id="error" class="error"></p>
+        <a id="manual-link" class="manual-link" style="display: none;" target="_blank">Create Issue Manually</a>
+        <div id="debug" class="debug"></div>
     </div>
 </body>
 </html>

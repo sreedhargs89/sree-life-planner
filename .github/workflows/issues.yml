@@ -1,28 +1,41 @@
-name: Generate Issues JSON
+name: Generate Issues JSON and Deploy
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
   issues: read
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 on:
   workflow_dispatch:
   push:
+    branches: [ main ]
   issues:
-    types: [opened]
+    types: [opened, edited, closed, reopened]
+  schedule:
+    - cron: '0 0 * * *'  # Run daily at midnight UTC
 
 jobs:
-  generate-json:
+  build-and-deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Fetch Issues
-      id: get-issues
+    - name: Fetch Issues and Generate JSON
       uses: actions/github-script@v7
       with:
         script: |
           const fs = require('fs');
+          console.log('Fetching issues from repository...');
           const issues = await github.rest.issues.listForRepo({
             owner: context.repo.owner,
             repo: context.repo.repo,
@@ -31,14 +44,35 @@ jobs:
             sort: 'created',
             direction: 'desc'
           });
-          const issueData = issues.data.map(issue => ({ title: issue.title, url: issue.html_url }));
-          fs.writeFileSync('issue-titles.json', JSON.stringify(issueData, null, 2))
+          console.log(`Found ${issues.data.length} issues`);
+          const issueData = issues.data
+            .filter(issue => !issue.pull_request) // Exclude pull requests
+            .map(issue => ({ 
+              title: issue.title, 
+              url: issue.html_url,
+              state: issue.state,
+              created_at: issue.created_at
+            }));
+          console.log(`Processed ${issueData.length} issues after filtering`);
+          fs.writeFileSync('issue-titles.json', JSON.stringify(issueData, null, 2));
+          console.log('issue-titles.json created successfully');
+          
+          // Also create a simple status file
+          const statusInfo = {
+            generated_at: new Date().toISOString(),
+            total_issues: issueData.length,
+            repository: `${context.repo.owner}/${context.repo.repo}`
+          };
+          fs.writeFileSync('status.json', JSON.stringify(statusInfo, null, 2));
 
-    - name: Commit and push if it changed
-      run: |-
-        git config user.name "Automated"
-        git config user.email "actions@users.noreply.github.com"
-        git add -A
-        timestamp=$(date -u)
-        git commit -m "Latest data: ${timestamp}" || exit 0
-        git push
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: '.'
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
