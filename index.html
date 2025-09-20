@@ -3,66 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planner Issue Redirector</title>
+    <title>Daily Planner - GitHub Issues</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
         }
+        
         .container {
-            text-align: center;
-            padding: 2rem;
-            border-radius: 10px;
             background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
+        
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin-bottom: 2rem;
+        }
+        
+        .date-display {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 1.2rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
         .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid white;
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top: 4px solid #ffffff;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 1rem auto;
+            animation: spin 1.2s linear infinite;
+            margin: 2rem auto;
         }
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        .status {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            min-height: 1.5rem;
+        }
+        
         .error {
             color: #ffeb3b;
-            margin-top: 1rem;
-        }
-        .debug {
-            color: #e0e0e0;
-            font-size: 0.8em;
-            margin-top: 1rem;
-            text-align: left;
-            background: rgba(0,0,0,0.2);
+            background: rgba(255, 235, 59, 0.1);
             padding: 1rem;
-            border-radius: 5px;
-            font-family: 'Courier New', monospace;
+            border-radius: 10px;
+            margin: 1rem 0;
+            border: 1px solid rgba(255, 235, 59, 0.3);
         }
+        
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
         .action-link {
             display: inline-block;
-            margin-top: 1rem;
-            padding: 0.5rem 1rem;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
             text-decoration: none;
-            border-radius: 5px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            margin-left: 0.5rem;
-            margin-right: 0.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
         }
+        
         .action-link:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .action-link:active {
+            transform: translateY(0);
+        }
+        
+        .debug {
+            background: rgba(0, 0, 0, 0.3);
+            color: #e0e0e0;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 2rem;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            text-align: left;
+            white-space: pre-line;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        @media (min-width: 768px) {
+            .actions {
+                flex-direction: row;
+                justify-content: center;
+            }
+            
+            .action-link {
+                flex: 1;
+                max-width: 200px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 2rem 1.5rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
         }
     </style>
     <script>
@@ -102,18 +195,27 @@
                     console.log('Issues loaded:', issues.length);
                     debugElement.innerHTML += `\n• Found ${issues.length} issues in JSON`;
                     
+                    // Hide spinner
+                    document.querySelector('.spinner').style.display = 'none';
+                    
                     // Daily Planner
                     const dailyMatchingIssue = issues.find(issue => issue.title.startsWith(formattedToday));
                     if (dailyMatchingIssue) {
                         console.log('Found matching daily issue:', dailyMatchingIssue);
-                        document.getElementById('status').textContent = 'Found existing daily issue! Redirecting...';
+                        document.getElementById('status').textContent = '🎉 Found today\'s issue! Redirecting...';
                         debugElement.innerHTML += `\n• Found Daily: ${dailyMatchingIssue.title}`;
+                        
+                        // Show debug info briefly before redirect
+                        debugElement.style.display = 'block';
+                        
                         setTimeout(() => {
                             window.location.href = dailyMatchingIssue.url;
-                        }, 1500);
+                        }, 2000);
                     } else {
-                        console.log('No matching daily issue found, creating new one');
-                        document.getElementById('status').textContent = 'No daily issue found. You can create one, or view weekly/monthly planners.';
+                        console.log('No matching daily issue found, showing options');
+                        document.getElementById('status').textContent = '📅 No daily issue found. Choose an option below:';
+                        
+                        // Show all action links
                         const fullDateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
                         const fullDateString = today.toLocaleDateString('en-US', fullDateOptions).replace(/,/g, '');
                         const title = `${formattedToday}: ${fullDateString}`;
@@ -121,8 +223,7 @@
                         
                         const dailyLink = document.getElementById('daily-link');
                         dailyLink.href = newIssueUrl;
-                        dailyLink.style.display = 'inline-block';
-                        document.querySelector('.spinner').style.display = 'none';
+                        dailyLink.style.display = 'block';
                     }
 
                     // Weekly Planner
@@ -136,7 +237,7 @@
                     } else {
                         weeklyLink.href = `https://github.com/${repoUrl}/issues/new?template=week.yml&title=${encodeURIComponent(weeklyTitle)}`;
                     }
-                    weeklyLink.style.display = 'inline-block';
+                    weeklyLink.style.display = 'block';
 
                     // Monthly Planner
                     const month = today.toLocaleString('default', { month: 'long' });
@@ -145,19 +246,26 @@
                     const monthlyLink = document.getElementById('monthly-link');
                     if (monthlyMatchingIssue) {
                         monthlyLink.href = monthlyMatchingIssue.url;
+                        monthlyLink.innerHTML = '📈 View Monthly Plan';
                     } else {
                         monthlyLink.href = `https://github.com/${repoUrl}/issues/new?template=month.yml&title=${encodeURIComponent(monthlyTitle)}`;
+                        monthlyLink.innerHTML = '📈 Create Monthly Plan';
                     }
-                    monthlyLink.style.display = 'inline-block';
+                    monthlyLink.style.display = 'block';
 
                 })
                 .catch(error => {
                     console.error('Error fetching issue titles:', error);
-                    document.getElementById('status').textContent = 'Error loading issues';
-                    document.getElementById('error').innerHTML = `Error: ${error.message}<br>This might happen if:<br>• GitHub Pages is not yet enabled<br>• The GitHub Actions workflow hasn't run yet<br>• issue-titles.json doesn't exist`;
+                    document.getElementById('status').textContent = '⚠️ Unable to load issues';
+                    
+                    const errorElement = document.getElementById('error');
+                    errorElement.innerHTML = `<strong>Error:</strong> ${error.message}<br><br><strong>This might happen if:</strong><br>• GitHub Pages is not yet enabled<br>• The GitHub Actions workflow hasn't run yet<br>• issue-titles.json doesn't exist<br><br><strong>You can still create issues manually below.</strong>`;
+                    errorElement.style.display = 'block';
+                    
                     document.querySelector('.spinner').style.display = 'none';
                     
                     debugElement.innerHTML += `\n• ERROR: ${error.message}`;
+                    debugElement.style.display = 'block';
                     
                     // Show manual fallback for daily
                     const fullDateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -166,7 +274,7 @@
                     const newIssueUrl = `https://github.com/${repoUrl}/issues/new?template=day.yml&title=${encodeURIComponent(title)}`;
                     const dailyLink = document.getElementById('daily-link');
                     dailyLink.href = newIssueUrl;
-                    dailyLink.style.display = 'inline-block';
+                    dailyLink.style.display = 'block';
 
                     // Show manual fallback for weekly
                     const weekNumber = getWeekNumber(today);
@@ -174,31 +282,46 @@
                     const weeklyTitle = `Week ${weekNumber} of ${year} - Weekly Plan`;
                     const weeklyLink = document.getElementById('weekly-link');
                     weeklyLink.href = `https://github.com/${repoUrl}/issues/new?template=week.yml&title=${encodeURIComponent(weeklyTitle)}`;
-                    weeklyLink.style.display = 'inline-block';
+                    weeklyLink.innerHTML = '📊 Create Weekly Plan';
+                    weeklyLink.style.display = 'block';
 
                     // Show manual fallback for monthly
                     const month = today.toLocaleString('default', { month: 'long' });
                     const monthlyTitle = `${month} ${year} - Monthly Plan`;
                     const monthlyLink = document.getElementById('monthly-link');
                     monthlyLink.href = `https://github.com/${repoUrl}/issues/new?template=month.yml&title=${encodeURIComponent(monthlyTitle)}`;
-                    monthlyLink.style.display = 'inline-block';
+                    monthlyLink.innerHTML = '📈 Create Monthly Plan';
+                    monthlyLink.style.display = 'block';
                 });
         });
     </script>
 </head>
 <body>
     <div class="container">
-        <h1>Planner</h1>
-        <p>Checking for today's issue: <strong id="date"></strong></p>
-        <div class="spinner"></div>
-        <p id="status">Loading...</p>
-        <p id="error" class="error"></p>
-        <div>
-            <a id="daily-link" class="action-link" style="display: none;" target="_blank">Create Daily Issue</a>
-            <a id="weekly-link" class="action-link" style="display: none;" target="_blank">This Week's Planner</a>
-            <a id="monthly-link" class="action-link" style="display: none;" target="_blank">This Month's Planner</a>
+        <h1>Daily Planner</h1>
+        <p class="subtitle">Your GitHub-powered productivity system</p>
+        
+        <div class="date-display">
+            📅 <span id="date">Loading...</span>
         </div>
-        <div id="debug" class="debug"></div>
+        
+        <div class="spinner"></div>
+        <div class="status" id="status">Loading...</div>
+        <div id="error" class="error" style="display: none;"></div>
+        
+        <div class="actions">
+            <a id="daily-link" class="action-link" style="display: none;" target="_blank">
+                📝 Create Daily Issue
+            </a>
+            <a id="weekly-link" class="action-link" style="display: none;" target="_blank">
+                📊 Weekly Planner
+            </a>
+            <a id="monthly-link" class="action-link" style="display: none;" target="_blank">
+                📈 Monthly Planner
+            </a>
+        </div>
+        
+        <div id="debug" class="debug" style="display: none;"></div>
     </div>
 </body>
 </html>
